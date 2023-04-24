@@ -2,52 +2,155 @@
 using ParsecIntegrationClient.Models;
 using System;
 using System.Collections.Generic;
+using System.Management.Instrumentation;
+using System.Reflection;
 
 namespace ParsecIntegrationClient.Services
 {
     public class DatabaseService
     {
-        public static List<People> GetPeoples()
+        
+
+
+        public static List<T> GetList<T>(string query)
         {
+
+            Logger.Log<DatabaseService>("Info", $"Database query: {query}");
+
+
+            var rows = new List<T>();
+
             var connectionString = SettingsService.DatabaseConnectionString;
 
             using (var connection = new FbConnection(connectionString))
             {
                 try
                 {
-                    Logger.Log<DatabaseService>("Info", "Connecting to database...");
                     connection.Open();
-                    Logger.Log<DatabaseService>("Info", "Connected to database...");
 
-                    var cmd = new FbCommand(SettingsService.DatabaseQueryString, connection);
+                    var cmd = new FbCommand(query, connection);
 
-                    var peoples = new List<People>();
-
-                    using (FbDataReader dr = cmd.ExecuteReader())
+                    using (var dr = cmd.ExecuteReader())
                     {
                         while (dr.Read())
                         {
-                            Logger.Log<DatabaseService>("Info", "FbDataReader Read");
-                            var people = new People();
-                            people.ID_DEV = dr.GetString(0);
-                            people.ID_CARD = dr.GetString(1);
-                            people.ID_PEP = dr.GetString(2);
-                            people.NAME = dr.GetString(3);
-                            people.SURNAME = dr.GetString(4);
-                            people.PATRONYMIC = dr.GetString(5);
-                            people.TABNUM = dr.GetString(6);
-                            peoples.Add(people);
-                            Logger.Log<DatabaseService>("Info", $"People : {people.ID_PEP} | {people.NAME}");
+                            var instance = (T) Activator.CreateInstance(typeof(T));
+
+                            int i = 0;
+                            var fields = typeof(T).GetFields(BindingFlags.Instance | BindingFlags.Static | 
+                                BindingFlags.NonPublic | BindingFlags.Public);
+
+                            foreach (var field in fields)
+                            {
+                                field.SetValue(instance, dr.GetValue(i).ToString()); 
+                                i++;
+                            }
+
+                            rows.Add(instance);
                         }
                     }
 
-                    return peoples;
+                    return rows;
                 }
                 catch (Exception ex)
                 {
                     Logger.Log<DatabaseService>("Exception", $"{ex.Message}");
                 }
-                return new List<People>();
+            }
+
+            return rows;
+        }
+
+        public static T Get<T>(string query)
+        {
+
+            Logger.Log<DatabaseService>("Info", $"Database query: {query}");
+
+
+            var instance = (T) Activator.CreateInstance(typeof(T));
+
+            var connectionString = SettingsService.DatabaseConnectionString;
+
+            using (var connection = new FbConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+
+                    var cmd = new FbCommand(query, connection);
+
+                    using (var dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            int i = 0;
+                            var fields = typeof(T).GetFields(BindingFlags.Instance | BindingFlags.Static |
+                                BindingFlags.NonPublic | BindingFlags.Public);
+
+                            foreach (var field in fields)
+                            {
+                                field.SetValue(instance, dr.GetValue(i).ToString());
+                                i++;
+                            }
+                            return instance;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log<DatabaseService>("Exception", $"{ex.Message}");
+                }
+            }
+
+            return instance;
+        }
+
+        public static void DeleteIdInDevById(string id)
+        {
+            try
+            {
+                Logger.Log<DatabaseService>("Info", $"DeleteIdInDevBy {id}");
+
+                var connectionString = SettingsService.DatabaseConnectionString;
+
+                using (var connection = new FbConnection(connectionString))
+                {
+                    connection.Open();
+
+                    var stringCommand = $"delete from CARDINDEV cg where cg.id_cardindev = {id}";
+                    var cmd = new FbCommand(stringCommand, connection);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex) 
+            {
+                Logger.Log<DatabaseService>("Exception", $"{ex.Message}");
+            }
+        }
+
+        public static void IncrementAttemp(RowIDInDev row)
+        {
+            try
+            {
+                Logger.Log<DatabaseService>("Info", $"IncrementAttemp {row.ID}");
+
+                var attemps = Convert.ToInt32(row.ATTEMPS);
+                attemps++;
+
+                var connectionString = SettingsService.DatabaseConnectionString;
+
+                using (var connection = new FbConnection(connectionString))
+                {
+                    connection.Open();
+
+                    var stringCommand = $"update cardindev cd set cd.attempts = {attemps} where cd.id_cardindev={row.ID}";
+                    var cmd = new FbCommand(stringCommand, connection);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log<DatabaseService>("Exception", $"{ex.Message}");
             }
         }
     }

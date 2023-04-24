@@ -4,8 +4,6 @@ using ParsecIntegrationClient.Services;
 using Quartz.Impl;
 using Quartz;
 using System;
-using System.Linq;
-using System.Management;
 using System.ServiceProcess;
 using System.IO;
 using System.Threading.Tasks;
@@ -65,18 +63,22 @@ namespace ParsecIntegrationClient
 
                     if (result.Result != ClientState.Result_Success)
                     {
-                        Console.WriteLine(result.ErrorMessage);
+                        Logger.Log<Service1>("Info", $"Authorization error | {result.ErrorMessage}");
                         return;
                     }
-                    ClientState.SetSession(result.Value, domain, name);
-                    Logger.Log<Service1>("Info", $"Authorization ok | {result.Value}");
+                    else
+                    {
+                        ClientState.SetSession(result.Value, domain, name);
+                        Logger.Log<Service1>("Info", $"Authorization ok | {result.Value}");
+                    }
+                    
 
 
-                    databaseJob = JobBuilder.Create<DatabaseJob>().Build();
+                    databaseJob = JobBuilder.Create<MainJob>().Build();
                     triggerPing = TriggerBuilder.Create()
                            .StartNow()
                            .WithSimpleSchedule(x => x
-                               .WithIntervalInSeconds(SettingsService.DatabaseJobTimeout * 1000)
+                               .WithIntervalInSeconds(SettingsService.DatabaseJobTimeout)
                                .RepeatForever())
                            .Build();
 

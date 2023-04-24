@@ -13,26 +13,26 @@ namespace ParsecIntegrationClient.Services
             set { DatabaseConnectionString = value; }
         }
 
-        public static string DatabaseConnectionString = "User = SYSDBA; " +
-                "Password = temp; " +
-                "Database = C:\\temp3\\RUBITECH_FOR_PARK.GDB; " +
-                "DataSource = 127.0.0.1; " +
-                "Port = 3050; " +
-                "Dialect = 3; Charset = win1251; Role =; " +
-                "Connection lifetime = 15; Pooling = true; MinPoolSize = 0; " +
-                "MaxPoolSize = 50; Packet Size = 8192; ServerType = 0;";
+        public static string DatabaseConnectionString = "User = SYSDBA; Password = temp; " +
+            "Database = C:\\Program Files (x86)\\Cardsoft\\DuoSE\\Access\\ShieldPro_rest.gdb; " +
+            "DataSource = 127.0.0.1; Port = 3050; Dialect = 3; Charset = win1251; Role =; " +
+            "Connection lifetime = 15; Pooling = true; MinPoolSize = 0; MaxPoolSize = 50; " +
+            "Packet Size = 8192; ServerType = 0;";
 
-        public string _databaseQueryString
+        public string _querySelectIdDevCardString
         {
-            get { return DatabaseQueryString; }
-            set { DatabaseQueryString = value; }
+            get { return QuerySelectIdDevCardString; }
+            set { QuerySelectIdDevCardString = value; }
         }
 
-        public static string DatabaseQueryString = "select cg.id_dev, cg.id_card, cg.id_pep, p.name, " +
-            "p.surname, p.patronymic, p.tabnum from" +
-            " CARDINDEV_GETLIST(1) cg\r\njoin people p on p.id_pep=cg.id_pep";
-
-
+        public static string QuerySelectIdDevCardString = "select cd.id_cardindev as id, cd.id_card, " +
+            "cd.id_pep, cd.operation, st.sname as ts_type from cardindev cd " +
+            "left join device d on d.id_dev=cd.id_dev " +
+            "left join device d2 on d2.id_ctrl=d.id_ctrl and d2.id_reader is null " +
+            "left join servertypelist stl on d2.id_server=stl.id_server " +
+            "left join servertype st on st.id=stl.id_type and st.sname='parsec' " +
+            "order by cd.id_cardindev;";
+        
         public int _databaseJobTimeout
         {
             get { return DatabaseJobTimeout; }
@@ -56,7 +56,7 @@ namespace ParsecIntegrationClient.Services
 
                 DatabaseConnectionString = settings._databaseConnectionString;
                 DatabaseJobTimeout = settings._databaseJobTimeout;
-                DatabaseQueryString = settings._databaseQueryString;
+                QuerySelectIdDevCardString = settings._querySelectIdDevCardString;
             }
         }
     }

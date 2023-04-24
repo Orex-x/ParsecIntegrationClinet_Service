@@ -28,3 +28,58 @@ C:\Users\dana\source\repos\ParsecIntegrationClinet_Service\ParsecIntegrationClie
 C:\Users\dana\source\repos\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.csproj.CopyComplete
 C:\Users\dana\source\repos\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.exe
 C:\Users\dana\source\repos\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.pdb
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\ParsecIntegrationClient.exe.config
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\ParsecIntegrationClient.exe
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\ParsecIntegrationClient.pdb
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\FirebirdSql.Data.FirebirdClient.dll
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\Newtonsoft.Json.dll
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\Quartz.dll
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\System.Buffers.dll
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\System.Diagnostics.DiagnosticSource.dll
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\System.Memory.dll
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\System.Numerics.Vectors.dll
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\System.Threading.Tasks.Extensions.dll
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\Microsoft.Extensions.Logging.Abstractions.xml
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\Newtonsoft.Json.xml
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\Quartz.xml
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\System.Buffers.xml
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\System.Diagnostics.DiagnosticSource.xml
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\System.Memory.xml
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\System.Numerics.Vectors.xml
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\System.Threading.Tasks.Extensions.xml
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.csproj.AssemblyReference.cache
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.csproj.SuggestedBindingRedirects.cache
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.ProjectInstaller.resources
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.csproj.GenerateResource.cache
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.csproj.CoreCompileInputs.cache
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.csproj.CopyComplete
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.exe
+C:\Users\dana\Documents\Artsek\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.pdb
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.csproj.AssemblyReference.cache
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.csproj.SuggestedBindingRedirects.cache
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.ProjectInstaller.resources
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.csproj.GenerateResource.cache
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.csproj.CoreCompileInputs.cache
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.exe
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.pdb
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\ParsecIntegrationClient.exe.config
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\ParsecIntegrationClient.exe.manifest
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\ParsecIntegrationClient.application
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\ParsecIntegrationClient.exe
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\ParsecIntegrationClient.pdb
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\Microsoft.Extensions.Logging.Abstractions.xml
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\Newtonsoft.Json.xml
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\Quartz.xml
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\System.Buffers.xml
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\System.Diagnostics.DiagnosticSource.xml
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\System.Memory.xml
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\System.Numerics.Vectors.xml
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\bin\Debug\System.Threading.Tasks.Extensions.xml
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.exe.manifest
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.application
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.csproj.CopyComplete
+D:\папка\слив говна 05.04.2023\Artsek\23 год\интеграция\ParsecIntegrationClinet_Service\ParsecIntegrationClient\obj\Debug\ParsecIntegrationClient.csproj.Fody.CopyLocal.cache
