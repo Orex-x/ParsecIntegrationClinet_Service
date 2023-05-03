@@ -26,7 +26,7 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>45</ApplicationRevision>
+    <ApplicationRevision>67</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -241,15 +241,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\Card.cs" />
     <Compile Include="Models\ClientState.cs" />
+    <Compile Include="Models\DbModelAddCard.cs" />
     <Compile Include="Models\DbModelAddIdentifier.cs" />
     <Compile Include="Models\DbModelAddOrg.cs" />
     <Compile Include="Models\DbModelAddPeople.cs" />
     <Compile Include="Models\DbModelRemovePeople.cs" />
-    <Compile Include="Models\Organization.cs" />
-    <Compile Include="Models\People.cs" />
-    <Compile Include="Models\RowIDInDev.cs" />
+    <Compile Include="Models\Operation.cs" />
+    <Compile Include="Models\DbModelRowIDInDev.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -264,6 +263,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\ContinueSessionJob.cs" />
     <Compile Include="Services\MainJob.cs" />
     <Compile Include="Services\DatabaseService.cs" />
     <Compile Include="Services\Logger.cs" />

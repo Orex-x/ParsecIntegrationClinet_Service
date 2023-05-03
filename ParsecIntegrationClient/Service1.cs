@@ -17,26 +17,17 @@ namespace ParsecIntegrationClient
 
         StdSchedulerFactory factory = null;
         IScheduler scheduler = null;
+
         IJobDetail databaseJob = null;
+        IJobDetail continueSessionJob = null;
+
         ITrigger triggerPing = null;
+        ITrigger continueSessionPing = null;
 
         public Service1()
         {
             InitializeComponent();
 
-            /* string ServiceName = "ParsecIntegrationClient";
-
-             using (var wmiService = new ManagementObject("Win32_Service.Name='" + ServiceName + "'"))
-             {
-                 wmiService.Get();
-                 var currentserviceExePath = wmiService["PathName"].ToString();
-                 currentserviceExePath = currentserviceExePath.Replace("\"", "");
-                 var array = currentserviceExePath.Split('\\');
-                 array = array.Take(array.Length - 1).ToArray();
-                 MainPath = string.Join("\\", array);
-             }*/
-
-            
             if (!Directory.Exists($@"{MainPath}\log"))
                 Directory.CreateDirectory($@"{MainPath}\log");
 
@@ -82,10 +73,17 @@ namespace ParsecIntegrationClient
                                .RepeatForever())
                            .Build();
 
+                    continueSessionJob = JobBuilder.Create<ContinueSessionJob>().Build();
+                    continueSessionPing = TriggerBuilder.Create()
+                          .WithSimpleSchedule(x => x
+                              .WithIntervalInSeconds(4 * 60)
+                              .RepeatForever())
+                          .Build();
+
                     scheduler = await factory.GetScheduler();
                     await scheduler.Start();
                     await scheduler.ScheduleJob(databaseJob, triggerPing);
-
+                    await scheduler.ScheduleJob(continueSessionJob, continueSessionPing);
                 }
                 catch (Exception ex)
                 {

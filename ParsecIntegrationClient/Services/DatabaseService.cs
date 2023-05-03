@@ -9,15 +9,8 @@ namespace ParsecIntegrationClient.Services
 {
     public class DatabaseService
     {
-        
-
-
         public static List<T> GetList<T>(string query)
         {
-
-            Logger.Log<DatabaseService>("Info", $"Database query: {query}");
-
-
             var rows = new List<T>();
 
             var connectionString = SettingsService.DatabaseConnectionString;
@@ -64,8 +57,7 @@ namespace ParsecIntegrationClient.Services
         public static T Get<T>(string query)
         {
 
-            Logger.Log<DatabaseService>("Info", $"Database query: {query}");
-
+           // Logger.Log<DatabaseService>("Info", $"Выполняется запрос к базе данных: {query}");
 
             var instance = (T) Activator.CreateInstance(typeof(T));
 
@@ -92,8 +84,11 @@ namespace ParsecIntegrationClient.Services
                                 field.SetValue(instance, dr.GetValue(i).ToString());
                                 i++;
                             }
+
                             return instance;
                         }
+
+                        Logger.Log<DatabaseService>("Info", $"Результат запроса пустой");
                     }
                 }
                 catch (Exception ex)
@@ -109,7 +104,7 @@ namespace ParsecIntegrationClient.Services
         {
             try
             {
-                Logger.Log<DatabaseService>("Info", $"DeleteIdInDevBy {id}");
+                Logger.Log<DatabaseService>("Info", $"Удаление записи в таблице CardInDev | ID {id}");
 
                 var connectionString = SettingsService.DatabaseConnectionString;
 
@@ -128,11 +123,11 @@ namespace ParsecIntegrationClient.Services
             }
         }
 
-        public static void IncrementAttemp(RowIDInDev row)
+        public static void IncrementAttemp(DbModelRowIDInDev row)
         {
             try
             {
-                Logger.Log<DatabaseService>("Info", $"IncrementAttemp {row.ID}");
+                Logger.Log<DatabaseService>("Info", $"Инкремент attempts | ID: {row.ID}");
 
                 var attemps = Convert.ToInt32(row.ATTEMPS);
                 attemps++;

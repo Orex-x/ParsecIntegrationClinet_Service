@@ -25,14 +25,16 @@ namespace ParsecIntegrationClient.Services
             set { QuerySelectIdDevCardString = value; }
         }
 
-        public static string QuerySelectIdDevCardString = "select cd.id_cardindev as id, cd.id_card, " +
-            "cd.id_pep, cd.operation, st.sname as ts_type from cardindev cd " +
-            "left join device d on d.id_dev=cd.id_dev " +
-            "left join device d2 on d2.id_ctrl=d.id_ctrl and d2.id_reader is null " +
-            "left join servertypelist stl on d2.id_server=stl.id_server " +
-            "left join servertype st on st.id=stl.id_type and st.sname='parsec' " +
-            "order by cd.id_cardindev;";
-        
+        public static string QuerySelectIdDevCardString = "select cd.id_cardindev" +
+            " as id, cd.id_card, cd.id_pep, cd.operation, cd.attempts from " +
+            "cardindev cd where ((cd.id_dev in (select d.id_dev from device d " +
+            "join device d2 on d2.id_ctrl=d.id_ctrl and d2.id_reader is null " +
+            "join servertypelist stl on d2.id_server=stl.id_server " +
+            "join servertype st on st.id=stl.id_type and st.sname='parsec'" +
+            " where d.id_reader is not null)) or(cd.id_dev is null)) " +
+            "and cd.attempts<20";
+
+
         public int _databaseJobTimeout
         {
             get { return DatabaseJobTimeout; }
