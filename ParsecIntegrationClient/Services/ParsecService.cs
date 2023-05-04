@@ -3,11 +3,33 @@ using ParsecIntegrationClient.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace ParsecIntegrationClient.Services
 {
     public class ParsecService
     {
+
+        public static Guid CheckAccessGroups(List<Guid> InheritedAccessGroups)
+        {
+            var integServ = new IntegrationService();
+            var accessGroups = integServ.GetAccessGroups(ClientState.SessionID);
+
+            foreach (var accessGroup in accessGroups)
+            {
+                var list = integServ.GetInheritedAccessGroups(ClientState.SessionID, accessGroup.ID);
+
+                bool isEqual = list.OrderBy(a => a).SequenceEqual(InheritedAccessGroups.OrderBy(a => a));
+
+                if (isEqual)
+                {
+                    return accessGroup.ID;
+                }
+            }
+
+            return Guid.Empty;
+        }
+
         public static AccessGroup GetAccessGroups(Guid idGroup)
         {
             var integServ = new IntegrationService();
@@ -39,124 +61,337 @@ namespace ParsecIntegrationClient.Services
         {
             try
             {
+                var integServ = new IntegrationService();
+
                 var query = "select c.id_card, an.guid, p.guid as people_guid, " +
                     "p.tabnum, p.name, p.patronymic, p.surname from card c, " +
                     "accessname an join people p on p.id_pep = c.id_pep " +
                     $"where c.id_pep = {row.ID_PEP} and c.id_cardtype = 1 " +
                     $"and an.id_accessname = {row.ID_CARD}";
 
-                var list = DatabaseService.GetList<DbModelAddIdentifier>(query);
+                var model = DatabaseService.Get<DbModelAddIdentifier>(query);
 
-                if(list.Count == 0)
+                if(model.CODE == null)
                 {
                     DatabaseService.IncrementAttemp(row);
                     Logger.Log<ParsecService>("Info", "В результате запроса к базе данных не было получено данных");
                     return;
                 }
-           
-                foreach (var model in list)
+
+                try
                 {
-                    try
+                    if (model.GUID_PEP == null || model.GUID_PEP == String.Empty)
                     {
-                        if (model.GUID_PEP == null || model.GUID_PEP == String.Empty)
-                        {
-                            Logger.Log<ParsecService>("Info", $"GUID_PEP null or empty");
-                            DatabaseService.IncrementAttemp(row);
-                            continue;
-                        }
+                        Logger.Log<ParsecService>("Info", $"GUID_PEP null or empty");
+                        DatabaseService.IncrementAttemp(row);
+                        return;
+                    }
 
-                        string hexValue = Convert.ToInt64(model.CODE).ToString("X8");
+                    string hexValue = Convert.ToInt64(model.CODE).ToString("X8");
 
-                        Logger.Log<ParsecService>("Info", $"Добавление группы доступа пользователю |" +
+                    Logger.Log<ParsecService>("Info", $"Добавление группы доступа пользователю |" +
                            $"code: {row.ID_CARD} (hex: {hexValue}) | GUID_PEP = {model.GUID_PEP} " +
                            $"| tab_num = {model.TAB_NUM_PEP} " +
                            $"| ФИО (artsec): {model.SURNAME} {model.NAME} {model.PATRONYMIC}");
 
-                        var integServ = new IntegrationService();
+                    var person = integServ.GetPerson(ClientState.SessionID, new Guid(model.GUID_PEP));
+                    if (person != null)
+                    {
 
-                        var person = integServ.GetPerson(ClientState.SessionID, new Guid(model.GUID_PEP));
+                        var res = integServ.OpenPersonEditingSession(ClientState.SessionID, person.ID);
 
-                        if (person != null)
+                        if (res.Result != ClientState.Result_Success)
                         {
-                            var res = integServ.OpenPersonEditingSession(ClientState.SessionID, person.ID);
+                            Logger.Log<ParsecService>("Error", $"Ошибка открытия сессии для редактирования пользователя. " +
+                                $"Ошибка {res.ErrorMessage}");
+                            DatabaseService.IncrementAttemp(row);
+                            return;
+                        }
 
-                            if (res.Result != ClientState.Result_Success)
+                        var _editSessionID = res.Value;
+
+                        var accesGroup = GetAccessGroups(new Guid(model.GUID_ACCESS_GROUP));
+
+                        Logger.Log<ParsecService>("Info", $"Получена группа доступа | NAME: {accesGroup.NAME} | GUID: {model.GUID_ACCESS_GROUP}");
+
+
+                        var identifiers = integServ.GetPersonIdentifiers(ClientState.SessionID, new Guid(model.GUID_PEP));
+
+                        Logger.Log<ParsecService>("Info", $"Получены идентификаторы у человека в количестве {identifiers.Length}");
+
+
+                        var identifier = identifiers.FirstOrDefault(x => x.CODE == hexValue);
+
+                        Logger.Log<ParsecService>("Info", $"Идентификатор с указанным кодом:  {hexValue} | {identifier.CODE}");
+
+                        var creatingItem = new Identifier();
+
+                        if (identifier != null)
+                        {
+                            Logger.Log<ParsecService>("Info", $"identifier.ACCGROUP_ID --> {identifier.ACCGROUP_ID}");
+
+                            if (identifier.ACCGROUP_ID == Guid.Empty)
                             {
-                                Logger.Log<ParsecService>("Error", $"Ошибка открытия сессии для редактирования пользователя. " +
-                                    $"Ошибка {res.ErrorMessage}");
-                                DatabaseService.IncrementAttemp(row);
-                                return;
+                                if (!Guid.Empty.Equals(accesGroup.ID))
+                                    creatingItem.ACCGROUP_ID = accesGroup.ID;
+
+                                creatingItem.IS_PRIMARY = true;
+                                creatingItem.CODE = hexValue;
                             }
+                            else
+                            {
+                                var arrayInheritedAccessGroups = integServ.GetInheritedAccessGroups(ClientState.SessionID, identifier.ACCGROUP_ID);
+                                var inheritedAccessGroups = arrayInheritedAccessGroups.ToList();
 
-                            var _editSessionID = res.Value;
+                                if(inheritedAccessGroups.Count == 0)
+                                    inheritedAccessGroups.Add(identifier.ACCGROUP_ID);
+                                
 
-                            var accesGroup = GetAccessGroups(new Guid(model.GUID_ACCESS_GROUP));
+                                inheritedAccessGroups.Add(accesGroup.ID);
 
-                            Logger.Log<ParsecService>("Info", $"Получена группа доступа | NAME: {accesGroup.NAME} | GUID: {model.GUID_ACCESS_GROUP}");
+                                Logger.Log<ParsecService>("Info", $"Добавлена новая группа доступа {inheritedAccessGroups.Count}");
 
-                            var creatingItem = new Identifier();
+                                var resCheckAccessGroups = CheckAccessGroups(inheritedAccessGroups);
 
+                                Logger.Log<ParsecService>("Info", $"Результат поиска группы доступа с такими же вложенными группами доступа " +
+                                    $"{resCheckAccessGroups}");
+
+
+                                if (resCheckAccessGroups != Guid.Empty)
+                                {
+                                    creatingItem = new Identifier()
+                                    {
+                                        ACCGROUP_ID = resCheckAccessGroups,
+                                        IS_PRIMARY = true,
+                                        CODE = hexValue,
+                                    };
+                                }
+                                else
+                                {
+                                    var schedules = integServ.GetAccessSchedules(ClientState.SessionID);
+
+
+                                    var newNameAccessGroup = string.Empty;
+
+                                    inheritedAccessGroups.ForEach(x => {
+                                        newNameAccessGroup += $"{GetAccessGroups(x).NAME} "; 
+                                    });
+
+                                    var resCreateAccessGroup = integServ.CreateAccessGroup(ClientState.SessionID,
+                                        newNameAccessGroup, schedules[0].ID, null);
+
+                                    if (resCreateAccessGroup.Result != ClientState.Result_Success)
+                                    {
+                                        Console.WriteLine(resCreateAccessGroup.ErrorMessage);
+                                        return;
+                                    }
+
+                                    var rGuid = resCreateAccessGroup.Value;
+
+                                    var resInerited = integServ.SetInheritedAccessGroups(ClientState.SessionID, rGuid, inheritedAccessGroups.ToArray());
+
+                                    creatingItem = new Identifier()
+                                    {
+                                        ACCGROUP_ID = rGuid,
+                                        IS_PRIMARY = true,
+                                        CODE = hexValue,
+                                    };  
+                                }
+                            }
+                        }
+                        else
+                        {
                             if (!Guid.Empty.Equals(accesGroup.ID))
                                 creatingItem.ACCGROUP_ID = accesGroup.ID;
 
                             creatingItem.IS_PRIMARY = true;
                             creatingItem.CODE = hexValue;
-
-                            var resAddPersonIdentifier = integServ.AddPersonIdentifier(_editSessionID, creatingItem);
-                            if (resAddPersonIdentifier.Result != ClientState.Result_Success)
-                            {
-                                Logger.Log<ParsecService>("Error", $"Ошибка при добавлении группы доступа пользователю. " +
-                                    $"Ошибка: {resAddPersonIdentifier.ErrorMessage}");
-                                DatabaseService.IncrementAttemp(row);
-                                return;
-                            }
-
-                            Logger.Log<ParsecService>("INFO", $"Гурппа доступа успешно добавлена | " +
-                               $"code: {row.ID_CARD} (hex: {hexValue}) " +
-                               $"Пользователю ФИО (parsec): {person.FIRST_NAME} {person.MIDDLE_NAME} {person.LAST_NAME}");
-
-                            DatabaseService.DeleteIdInDevById(row.ID);
                         }
-                        else
+
+
+                        var resAddPersonIdentifier = integServ.AddPersonIdentifier(_editSessionID, creatingItem);
+                        if (resAddPersonIdentifier.Result != ClientState.Result_Success)
                         {
+                            Logger.Log<ParsecService>("Error", $"Ошибка при добавлении группы доступа пользователю. " +
+                                $"Ошибка: {resAddPersonIdentifier.ErrorMessage}");
                             DatabaseService.IncrementAttemp(row);
-                            Logger.Log<ParsecService>("INFO", $"Пользователь с GUID: {model.GUID_PEP} не найден в parsec.");
+                            return;
                         }
+
+                        Logger.Log<ParsecService>("INFO", $"Гурппа доступа успешно добавлена | " +
+                           $"code: {row.ID_CARD} (hex: {hexValue}) " +
+                           $"Пользователю ФИО (parsec): {person.FIRST_NAME} {person.MIDDLE_NAME} {person.LAST_NAME}");
+
+                        DatabaseService.DeleteIdInDevById(row.ID);
                     }
-                    catch (Exception ex)
+                    else
                     {
                         DatabaseService.IncrementAttemp(row);
-                        Logger.Log<ParsecService>("Exception", ex.Message);
-                    }
+                        Logger.Log<ParsecService>("INFO", $"Пользователь с GUID: {model.GUID_PEP} не найден в parsec.");
+                    }   
                 }
+                catch (Exception ex)
+                {
+                    DatabaseService.IncrementAttemp(row);
+                    Logger.Log<ParsecService>("Exception", $"{ex.Message} | {ex.Source} | {ex.StackTrace} | {ex.Data}");
+                }
+
             }
             catch (Exception ex)
             {
                 DatabaseService.IncrementAttemp(row);
-                Logger.Log<ParsecService>("Exception", ex.Message);
+                Logger.Log<ParsecService>("Exception", $"{ex.Message} | {ex.Source} | {ex.StackTrace} | {ex.Data}");
             }
         }
 
         public static void RemoveIdentifierPeople(DbModelRowIDInDev row)
         {
-            var integServ = new IntegrationService();
-
-            string hexValue = Convert.ToInt64(row.ID_CARD).ToString("X8");
-
-            Logger.Log<ParsecService>("Info",
-               $"Удаление идентификатора | {row.ID_CARD} ({hexValue})");
-
-            var res = integServ.DeleteIdentifier(ClientState.SessionID, hexValue);
-            if (res.Result != ClientState.Result_Success)
+            try
             {
-                Logger.Log<ParsecService>("Error", res.ErrorMessage);
-                DatabaseService.IncrementAttemp(row);
-                return;
-            }
+                var integServ = new IntegrationService();
 
-            Logger.Log<ParsecService>("Info",
-                $"Идентификатор успешно удален | {row.ID_CARD} ({hexValue}) ");
-            DatabaseService.DeleteIdInDevById(row.ID);
+                var query = "select c.id_card, an.guid, p.guid as people_guid, " +
+                     "p.tabnum, p.name, p.patronymic, p.surname from card c, " +
+                     "accessname an join people p on p.id_pep = c.id_pep " +
+                     $"where c.id_pep = {row.ID_PEP} and c.id_cardtype = 1 " +
+                     $"and an.id_accessname = {row.ID_CARD}";
+
+                var model = DatabaseService.Get<DbModelAddIdentifier>(query);
+
+                if (model.CODE == null)
+                {
+                    DatabaseService.IncrementAttemp(row);
+                    Logger.Log<ParsecService>("Info", "В результате запроса к базе данных не было получено данных");
+                    return;
+                }
+
+                if (model.GUID_PEP == null || model.GUID_PEP == String.Empty)
+                {
+                    Logger.Log<ParsecService>("Info", $"GUID_PEP null or empty");
+                    DatabaseService.IncrementAttemp(row);
+                    return;
+                }
+
+
+                string hexValue = Convert.ToInt64(model.CODE).ToString("X8");
+
+                Logger.Log<ParsecService>("Info",
+                   $"Удаление идентификатора | {model.CODE} ({hexValue})");
+
+
+                var person = integServ.GetPerson(ClientState.SessionID, new Guid(model.GUID_PEP));
+
+
+                if (person == null)
+                {
+                    DatabaseService.IncrementAttemp(row);
+                    return;
+                }
+
+                var res = integServ.OpenPersonEditingSession(ClientState.SessionID, person.ID);
+
+                if (res.Result != ClientState.Result_Success)
+                {
+                    Logger.Log<ParsecService>("Error", $"Ошибка открытия сессии для редактирования пользователя. " +
+                        $"Ошибка {res.ErrorMessage}");
+                    DatabaseService.IncrementAttemp(row);
+                    return;
+                }
+
+                var _editSessionID = res.Value;
+
+
+
+                var identifiers = integServ.GetPersonIdentifiers(ClientState.SessionID, new Guid(model.GUID_PEP));
+
+                Logger.Log<ParsecService>("Info", $"Получены идентификаторы у человека в количестве {identifiers.Length}");
+
+
+                var identifier = identifiers.FirstOrDefault(x => x.CODE == hexValue);
+
+                Logger.Log<ParsecService>("Info", $"Идентификатор с указанным кодом:  {hexValue} | {identifier.CODE}");
+
+                var arrayInheritedAccessGroups = integServ.GetInheritedAccessGroups(ClientState.SessionID, identifier.ACCGROUP_ID);
+                var inheritedAccessGroups = arrayInheritedAccessGroups.ToList();
+
+                inheritedAccessGroups.Remove(new Guid(model.GUID_ACCESS_GROUP));
+
+                var creatingItem = new Identifier();
+
+                if (inheritedAccessGroups.Count == 1)
+                {
+                    var accessGroupId = inheritedAccessGroups[0];
+
+                    creatingItem = new Identifier()
+                    {
+                        ACCGROUP_ID = accessGroupId,
+                        IS_PRIMARY = true,
+                        CODE = hexValue,
+                    };
+                }
+                else
+                {
+                    var resCheckAccessGroups = CheckAccessGroups(inheritedAccessGroups);
+
+                    Logger.Log<ParsecService>("Info", $"Результат поиска группы доступа с такими же вложенными группами доступа " +
+                        $"{resCheckAccessGroups}");
+
+
+                    if (resCheckAccessGroups != Guid.Empty)
+                    {
+                        creatingItem = new Identifier()
+                        {
+                            ACCGROUP_ID = resCheckAccessGroups,
+                            IS_PRIMARY = true,
+                            CODE = hexValue,
+                        };
+                    }
+                    else
+                    {
+                        var schedules = integServ.GetAccessSchedules(ClientState.SessionID);
+
+                        var resCreateAccessGroup = integServ.CreateAccessGroup(ClientState.SessionID,
+                            "(Особая) Artsec", schedules[0].ID, null);
+
+                        if (resCreateAccessGroup.Result != ClientState.Result_Success)
+                        {
+                            Console.WriteLine(resCreateAccessGroup.ErrorMessage);
+                            return;
+                        }
+
+                        var rGuid = resCreateAccessGroup.Value;
+
+                        var resInerited = integServ.SetInheritedAccessGroups(ClientState.SessionID, rGuid, inheritedAccessGroups.ToArray());
+
+                        creatingItem = new Identifier()
+                        {
+                            ACCGROUP_ID = rGuid,
+                            IS_PRIMARY = true,
+                            CODE = hexValue,
+                        };
+                    }
+                }
+
+                var resAddPersonIdentifier = integServ.AddPersonIdentifier(_editSessionID, creatingItem);
+                if (resAddPersonIdentifier.Result != ClientState.Result_Success)
+                {
+                    Logger.Log<ParsecService>("Error", $"Ошибка при добавлении группы доступа пользователю. " +
+                        $"Ошибка: {resAddPersonIdentifier.ErrorMessage}");
+                    DatabaseService.IncrementAttemp(row);
+                    return;
+                }
+
+                Logger.Log<ParsecService>("INFO", $"Гурппа доступа успешно добавлена | " +
+                   $"code: {row.ID_CARD} (hex: {hexValue}) " +
+                   $"Пользователю ФИО (parsec): {person.FIRST_NAME} {person.MIDDLE_NAME} {person.LAST_NAME}");
+
+                DatabaseService.DeleteIdInDevById(row.ID);
+            }
+            catch(Exception ex)
+            {
+                DatabaseService.IncrementAttemp(row);
+                Logger.Log<ParsecService>("Exception", $"{ex.Message} | {ex.Source} | {ex.StackTrace} | {ex.Data}");
+            }
         }
 
         public static void AddPeople(DbModelRowIDInDev row)
@@ -426,24 +661,32 @@ namespace ParsecIntegrationClient.Services
 
         public static void RemoveCardPeople(DbModelRowIDInDev row)
         {
-            var integServ = new IntegrationService();
-
-            string hexValue = Convert.ToInt64(row.ID_CARD).ToString("X8");
-
-            Logger.Log<ParsecService>("Info",
-               $"Удаление карты | {row.ID_CARD} (hex: {hexValue})");
-
-            var res = integServ.DeleteIdentifier(ClientState.SessionID, hexValue);
-            if (res.Result != ClientState.Result_Success)
+            try
             {
-                Logger.Log<ParsecService>("Error", res.ErrorMessage);
-                DatabaseService.IncrementAttemp(row);
-                return;
-            }
+                var integServ = new IntegrationService();
 
-            Logger.Log<ParsecService>("Info",
-                $"Карта успешно удалена | {row.ID_CARD} (hex: {hexValue}) ");
-            DatabaseService.DeleteIdInDevById(row.ID);
+                string hexValue = Convert.ToInt64(row.ID_CARD).ToString("X8");
+
+                Logger.Log<ParsecService>("Info",
+                   $"Удаление карты | {row.ID_CARD} (hex: {hexValue})");
+
+                var res = integServ.DeleteIdentifier(ClientState.SessionID, hexValue);
+                if (res.Result != ClientState.Result_Success)
+                {
+                    Logger.Log<ParsecService>("Error", res.ErrorMessage);
+                    DatabaseService.IncrementAttemp(row);
+                    return;
+                }
+
+                Logger.Log<ParsecService>("Info",
+                    $"Карта успешно удалена | {row.ID_CARD} (hex: {hexValue}) ");
+                DatabaseService.DeleteIdInDevById(row.ID);
+            }
+            catch(Exception ex)
+            {
+                DatabaseService.IncrementAttemp(row);
+                Logger.Log<ParsecService>("Exception", ex.Message);
+            }
         }
     }
 }
