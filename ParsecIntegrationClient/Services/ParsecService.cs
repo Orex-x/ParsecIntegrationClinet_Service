@@ -34,8 +34,8 @@ namespace ParsecIntegrationClient.Services
         {
             var integServ = new IntegrationService();
             var accesGroups = integServ.GetAccessGroups(ClientState.SessionID).ToList();
-            foreach(var item in accesGroups)
-                if(item.ID.Equals(idGroup))
+            foreach (var item in accesGroups)
+                if (item.ID.Equals(idGroup))
                     return item;
 
             return null;
@@ -71,7 +71,7 @@ namespace ParsecIntegrationClient.Services
 
                 var model = DatabaseService.Get<DbModelAddIdentifier>(query);
 
-                if(model.CODE == null)
+                if (model.CODE == null)
                 {
                     DatabaseService.IncrementAttemp(row);
                     Logger.Log<ParsecService>("Info", "В результате запроса к базе данных не было получено данных");
@@ -143,9 +143,9 @@ namespace ParsecIntegrationClient.Services
                                 var arrayInheritedAccessGroups = integServ.GetInheritedAccessGroups(ClientState.SessionID, identifier.ACCGROUP_ID);
                                 var inheritedAccessGroups = arrayInheritedAccessGroups.ToList();
 
-                                if(inheritedAccessGroups.Count == 0)
+                                if (inheritedAccessGroups.Count == 0)
                                     inheritedAccessGroups.Add(identifier.ACCGROUP_ID);
-                                
+
 
                                 inheritedAccessGroups.Add(accesGroup.ID);
 
@@ -174,7 +174,7 @@ namespace ParsecIntegrationClient.Services
                                     var newNameAccessGroup = string.Empty;
 
                                     inheritedAccessGroups.ForEach(x => {
-                                        newNameAccessGroup += $"{GetAccessGroups(x).NAME} "; 
+                                        newNameAccessGroup += $"{GetAccessGroups(x).NAME} ";
                                     });
 
                                     var resCreateAccessGroup = integServ.CreateAccessGroup(ClientState.SessionID,
@@ -195,7 +195,7 @@ namespace ParsecIntegrationClient.Services
                                         ACCGROUP_ID = rGuid,
                                         IS_PRIMARY = true,
                                         CODE = hexValue,
-                                    };  
+                                    };
                                 }
                             }
                         }
@@ -228,7 +228,7 @@ namespace ParsecIntegrationClient.Services
                     {
                         DatabaseService.IncrementAttemp(row);
                         Logger.Log<ParsecService>("INFO", $"Пользователь с GUID: {model.GUID_PEP} не найден в parsec.");
-                    }   
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -387,7 +387,7 @@ namespace ParsecIntegrationClient.Services
 
                 DatabaseService.DeleteIdInDevById(row.ID);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 DatabaseService.IncrementAttemp(row);
                 Logger.Log<ParsecService>("Exception", $"{ex.Message} | {ex.Source} | {ex.StackTrace} | {ex.Data}");
@@ -407,9 +407,9 @@ namespace ParsecIntegrationClient.Services
 
                 var people = DatabaseService.Get<DbModelAddPeople>(query);
 
-                if(people != null)
+                if (people != null)
                 {
-                    Logger.Log<ParsecService>("Info", 
+                    Logger.Log<ParsecService>("Info",
                         $"Добавление пользователя " +
                         $"| ФИО: {people.SURNAME} {people.NAME} {people.PATRONYMIC} " +
                         $"TAB_NUM: {people.TABNUM}");
@@ -431,13 +431,22 @@ namespace ParsecIntegrationClient.Services
                     if (res.Result != ClientState.Result_Success)
                     {
                         Logger.Log<ParsecService>("Error", res.ErrorMessage);
-                        DatabaseService.IncrementAttemp(row);
-                        return;
+
+                        Logger.Log<ParsecService>("Info", "Попытка записать пользователя в организацию SYSTEM");
+                        person.ORG_ID = new Guid("7c8f882a-35cd-48f2-9cc2-a2618d3bbdcc");
+                        var res_system = integServ.CreatePerson(ClientState.SessionID, person);
+                        if (res_system.Result != ClientState.Result_Success)
+                        {
+                            Logger.Log<ParsecService>("Error", res_system.ErrorMessage);
+                            DatabaseService.IncrementAttemp(row);
+                            return;
+                        }
                     }
 
                     Logger.Log<ParsecService>("Info", $"Пользователь добавлен успешно " +
                         $"| ФИО: {people.SURNAME} {people.NAME} {people.PATRONYMIC} " +
-                        $"TAB_NUM: {people.TABNUM} GUID: {people.GUID_PEP}");
+                        $"TAB_NUM: {people.TABNUM} GUID: {people.GUID_PEP} " +
+                        $"В организацию с GUID | {people.GUID_ORG}");
 
                     DatabaseService.DeleteIdInDevById(row.ID);
                     return;
@@ -505,7 +514,7 @@ namespace ParsecIntegrationClient.Services
                     $" NAME: {model.NAME} DIVCODE: {model.DIVCODE}");
 
 
-       
+
 
                 if (model.NAME == null)
                 {
@@ -567,7 +576,7 @@ namespace ParsecIntegrationClient.Services
                 DatabaseService.DeleteIdInDevById(row.ID);
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
 
             }
@@ -682,7 +691,7 @@ namespace ParsecIntegrationClient.Services
                     $"Карта успешно удалена | {row.ID_CARD} (hex: {hexValue}) ");
                 DatabaseService.DeleteIdInDevById(row.ID);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 DatabaseService.IncrementAttemp(row);
                 Logger.Log<ParsecService>("Exception", ex.Message);
